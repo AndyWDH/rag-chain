@@ -29,10 +29,11 @@
 
 | 维度 | 市面常见 RAG 教程 | 这个项目 |
 |------|----------------|---------|
-| 实现方式 | LangChain 封装,跑通了不知道为啥 | **全手写**,自己实现切分 / 检索 / 重排 / Query 改写 |
+| 实现方式 | LangChain 封装,跑通了不知道为啥 | **双版本**:全手写版(学原理)+LangChain优化版(生产用) |
 | 配套代码 | demo 玩具,clone 下来跑不通 | **完整可运行**,自带合成测试数据 |
 | 内容深度 | 偏概念,缺真实工程经验 | **每章配真实项目踩坑**(核辐射条款、推销 vs 销售…) |
 | 面试帮助 | 学完不知道怎么讲 | **每章配 5 道大厂真题** + 简历段位写法 |
+| 生产部署 | 无 | **LangChain 优化版含 API 服务+熔断保护+三级缓存** |
 | 目标读者 | 含糊不清 | **明确「半小白」**:有编程基础 + RAG 零基础 |
 
 ---
@@ -67,7 +68,16 @@ Chunk 1: :(1)战争 (2)核辐射
 
 ### 完整版:跑通一个真正的 RAG 系统
 
-[`rag_project/`](rag_project/) 是一个真正能跑的端到端系统:**DeepSeek + ChromaDB + bge-m3,核心代码全手写、没有 LangChain**,每个模块对应教程一章。
+本项目提供**两种实现方式**：
+
+| 实现方式 | 特点 | 适用场景 |
+|----------|------|----------|
+| [`rag_project/`](rag_project/) | 全手写实现，无框架依赖 | 学习底层原理 |
+| [`rag_langchain/`](rag_langchain/) | LangChain 框架优化版 | 生产部署 |
+
+#### 📦 方式一：全手写版（学习推荐）
+
+**DeepSeek + ChromaDB + bge-m3,核心代码全手写、没有 LangChain**,每个模块对应教程一章。
 
 ```bash
 cd rag-from-zero/rag_project
@@ -83,7 +93,31 @@ python scripts/build_index.py
 python scripts/ask.py "核辐射在保障范围内吗?"
 ```
 
-`ask.py` 会打印「提问 → 答案 → 来源」,答案基于检索到的真实条款生成并标注出处。详细路径(含「30 秒免建库快速体验」)见 **[rag_project/README.md](rag_project/README.md)**。
+`ask.py` 会打印「提问 → 答案 → 来源」,答案基于检索到的真实条款生成并标注出处。详细路径见 **[rag_project/README.md](rag_project/README.md)**。
+
+#### 🚀 方式二：LangChain 优化版（生产推荐）
+
+基于 LangChain 框架的企业级实现，包含**四级检索优化流程**：
+
+```bash
+cd rag-from-zero/rag_langchain
+
+# 安装依赖
+pip install -r requirements.txt
+cp .env.example .env            # 填入 DashScope API Key
+python scripts/build_index.py
+python scripts/ask.py "等待期是多少天?"
+```
+
+**核心特性**：
+- ✅ **Query 分类器**：基于正则/词典/长度/疑问句特征自动分类
+- ✅ **RRF 融合器**：纯排名融合，解决分数尺度差异
+- ✅ **Cross-Encoder 精排**：二次排序提升相关性
+- ✅ **Bad Case 回归**：失败样例驱动的权重校准
+- ✅ **FastAPI 服务**：RESTful 接口 + 熔断器保护
+- ✅ **三级缓存**：L1问答/L2检索/L3嵌入加速
+
+详细文档见 **[rag_langchain/README.md](rag_langchain/README.md)**。
 
 ---
 
@@ -150,12 +184,16 @@ rag-from-zero/
 │   │   └── sample-data/            #   合成保险条款
 │   ├── ch04-embedding/  …  ch10-evaluation/
 │   └── appendix-resume-interview/  ← 简历填空模板
-└── rag_project/                    ← 完整端到端项目(DeepSeek + ChromaDB,手写无 LangChain)
-    ├── src/                        ← 核心模块,各对应一章(loader / chunker / embedder /
-    │                                  vectorstore / retriever / reranker / query_processor /
-    │                                  generator / pipeline)
-    ├── scripts/                    ← 造数据 / 建库 / 问答(generate / build_index / ask / quickstart)
-    └── tests/                      ← 零依赖冒烟测试 + 评估集
+├── rag_project/                    ← 完整端到端项目(DeepSeek + ChromaDB,手写无 LangChain)
+│   ├── src/                        ← 核心模块,各对应一章(loader / chunker / embedder /
+│   │                                  vectorstore / retriever / reranker / query_processor /
+│   │                                  generator / pipeline)
+│   ├── scripts/                    ← 造数据 / 建库 / 问答(generate / build_index / ask / quickstart)
+│   └── tests/                      ← 零依赖冒烟测试 + 评估集
+└── rag_langchain/                  ← LangChain 优化版(企业级生产部署)
+    ├── src/                        ← 核心模块(pipeline / api / cache / config)
+    ├── scripts/                    ← 建库 / 问答(build_index / ask)
+    └── data/                       ← PDF 文档目录
 ```
 
 **每章自包含** —— `cd chapters/ch03-chunking && pip install -r requirements.txt && python chunk_demo.py` 就能跑。
