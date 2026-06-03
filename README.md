@@ -7,7 +7,7 @@
 
 <br/>
 
-<img src="chapters/assets/readme/architecture.svg" alt="RAG 系统架构:离线建库 + 在线问答双链路" width="720" />
+<img src="rag-chain/chapters/assets/readme/architecture.svg" alt="RAG 系统架构:离线建库 + 在线问答双链路" width="720" />
 
 <em>一套 RAG 系统的完整架构:离线建库 + 在线问答 双链路</em>
 
