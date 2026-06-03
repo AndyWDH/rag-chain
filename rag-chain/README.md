@@ -68,12 +68,13 @@ Chunk 1: :(1)战争 (2)核辐射
 
 ### 完整版:跑通一个真正的 RAG 系统
 
-本项目提供**两种实现方式**：
+本项目提供**三种实现方式**：
 
 | 实现方式 | 特点 | 适用场景 |
 |----------|------|----------|
 | [`rag_project/`](rag_project/) | 全手写实现，无框架依赖 | 学习底层原理 |
 | [`rag_langchain/`](rag_langchain/) | LangChain 框架优化版 | 生产部署 |
+| [`rag_Django/`](rag_Django/) | Django + LangGraph 企业版 | 企业级 Web 应用 |
 
 #### 📦 方式一：全手写版（学习推荐）
 
@@ -118,6 +119,35 @@ python scripts/ask.py "等待期是多少天?"
 - ✅ **三级缓存**：L1问答/L2检索/L3嵌入加速
 
 详细文档见 **[rag_langchain/README.md](rag_langchain/README.md)**。
+
+#### 🏢 方式三：Django + LangGraph 企业版（企业推荐）
+
+基于 Django 框架和 LangGraph 状态机的企业级实现，包含完整的 Web 界面和 RESTful API：
+
+```bash
+cd rag-from-zero/rag_Django
+
+# 安装依赖
+pip install -r requirements.txt
+cp .env.example .env            # 填入 DashScope API Key
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8000
+```
+
+**核心特性**：
+- ✅ **LangGraph 状态机**：灵活编排检索流程
+- ✅ **Query 分类器**：自动路由到最优检索通道
+- ✅ **双路检索**：向量检索 + BM25 关键词检索
+- ✅ **RRF 融合 + Cross-Encoder 精排**：提升检索质量
+- ✅ **SSE 流式输出**：实时返回回答内容
+- ✅ **Vue 前端界面**：现代化聊天体验
+- ✅ **RESTful API**：完整的会话管理接口
+
+**访问地址**：
+- 前端界面：http://localhost:8000/
+- REST API：http://localhost:8000/api/v1/
+
+详细文档见 **[rag_Django/README.md](rag_Django/README.md)**。
 
 ---
 
@@ -190,10 +220,15 @@ rag-from-zero/
 │   │                                  generator / pipeline)
 │   ├── scripts/                    ← 造数据 / 建库 / 问答(generate / build_index / ask / quickstart)
 │   └── tests/                      ← 零依赖冒烟测试 + 评估集
-└── rag_langchain/                  ← LangChain 优化版(企业级生产部署)
-    ├── src/                        ← 核心模块(pipeline / api / cache / config)
-    ├── scripts/                    ← 建库 / 问答(build_index / ask)
-    └── data/                       ← PDF 文档目录
+├── rag_langchain/                  ← LangChain 优化版(企业级生产部署)
+│   ├── src/                        ← 核心模块(pipeline / api / cache / config)
+│   ├── scripts/                    ← 建库 / 问答(build_index / ask)
+│   └── data/                       ← PDF 文档目录
+└── rag_Django/                     ← Django + LangGraph 企业版
+    ├── apps/                       ← 应用模块(core / documents / retrieval / chat / analytics)
+    ├── config/                     ← Django 配置(settings / urls / wsgi)
+    ├── templates/                  ← Vue 前端模板
+    └── vector_data/                ← 向量数据库持久化
 ```
 
 **每章自包含** —— `cd chapters/ch03-chunking && pip install -r requirements.txt && python chunk_demo.py` 就能跑。
